@@ -10,8 +10,30 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import ayush.chatnest.Screens.LoginScreen
+import ayush.chatnest.Screens.SignUpScreen
 import ayush.chatnest.ui.theme.ChatNestTheme
 
+
+sealed class DestinationScreen(val route : String){
+    object  SignUp : DestinationScreen ("signup")
+    object  Login : DestinationScreen ("login")
+    object  Profile : DestinationScreen ("profile")
+    object  ChatList : DestinationScreen ("chatlist")
+    object  SingleChat : DestinationScreen ("singlechat/{chatId}"){
+        fun createRoute(id: String) = "singlechat/id"
+    }
+
+    object  StatusList : DestinationScreen ("statuslist")
+    object  SingleStatus : DestinationScreen ("singleStatus/{userId}"){
+        fun createRoute(userId: String) = "singleStatus/userId"
+    }
+
+}
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -22,7 +44,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    Greeting("Android")
+                    ChatAppNavigation()
                 }
             }
         }
@@ -30,17 +52,27 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
+fun ChatAppNavigation() {
+val navController = rememberNavController()
+    val vm = hiltViewModel<LCViewModel>()
+    NavHost(navController = navController, startDestination = DestinationScreen.SignUp.route ){
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    ChatNestTheme {
-        Greeting("Android")
+        composable(DestinationScreen.SignUp.route){
+            SignUpScreen(navController , vm)
+        }
+//        composable(DestinationScreen.SignUp.route){
+//            SignUpScreen()
+//        }
+//        composable(DestinationScreen.SignUp.route){
+//            SignUpScreen()
+//        }
+//        composable(DestinationScreen.SignUp.route){
+//            SignUpScreen()
+//        }
+
+
+
     }
+
+
 }
