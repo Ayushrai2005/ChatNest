@@ -47,6 +47,7 @@ import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.firestore
+import dagger.hilt.android.lifecycle.HiltViewModel
 
 data class User(
     val userEmail : String = "",
@@ -156,6 +157,7 @@ fun SignUpScreen(navController: NavController ,
                     userPassword = userPassword,
                     name = name ,
                     phoneNumber = phoneNumber ,
+                    vm = vm
 
                 )
 
@@ -214,44 +216,18 @@ private fun GradientButton(
     userEmail: String ,
     userPassword : String,
     name : String,
-    phoneNumber : String
+    phoneNumber : String,
+    vm : LCViewModel
 
 ) {
     val context = LocalContext.current
-    fun addUserToDatabase(user: User){
-        Firebase.firestore.collection("Users").document(userEmail)
-            .set(user)
-            .addOnSuccessListener {
-                Toast.makeText(context, "User Saved ", Toast.LENGTH_SHORT).show()
-            }
-            .addOnFailureListener {
-            }
-    }
-    auth = Firebase.auth
     androidx.compose.material3.Button(
         modifier = Modifier
             .fillMaxWidth()
             .padding(start = 32.dp, end = 32.dp),
         onClick = {
             if (userEmail.isNotEmpty() && userPassword.isNotEmpty()) {
-                auth.createUserWithEmailAndPassword(userEmail, userPassword)
-                    .addOnCompleteListener { task ->
-                        if (task.isSuccessful) {
-                            // Inside your composable function
-                            addUserToDatabase(User(userEmail, phoneNumber, userPassword, name))
-
-                            // Sign in success, update UI with the signed-in user's information
-                            val user = auth.currentUser
-                            Toast.makeText(context, "Registered Successfully", Toast.LENGTH_SHORT)
-                                .show()
-                        } else {
-                            // If sign in fails, display a message to the user.
-                            Toast.makeText(context, "Registartion failed", Toast.LENGTH_SHORT)
-                                .show()
-
-                        }
-                    }
-
+                vm.signup(name = name, phoneNumber = phoneNumber , userEmail = userEmail, userPassword = userPassword )
             }else{
                 Toast.makeText(context, "Please fill in all fields", Toast.LENGTH_SHORT).show()
 

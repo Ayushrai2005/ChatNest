@@ -17,6 +17,7 @@ import androidx.navigation.compose.rememberNavController
 import ayush.chatnest.Screens.LoginScreen
 import ayush.chatnest.Screens.SignUpScreen
 import ayush.chatnest.ui.theme.ChatNestTheme
+import dagger.hilt.android.AndroidEntryPoint
 
 
 sealed class DestinationScreen(val route : String){
@@ -33,7 +34,7 @@ sealed class DestinationScreen(val route : String){
         fun createRoute(userId: String) = "singleStatus/userId"
     }
 
-}
+}@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
