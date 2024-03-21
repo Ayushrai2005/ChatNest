@@ -42,6 +42,7 @@ import ayush.chatnest.Helper.Visibility
 import ayush.chatnest.Helper.VisibilityOff
 import ayush.chatnest.LCViewModel
 import ayush.chatnest.R
+import ayush.chatnest.commonProgressBar
 import ayush.chatnest.navigateTo
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
@@ -103,8 +104,9 @@ fun SignUpScreen(navController: NavController ,
 
                 )
             Column(
-                modifier = Modifier.padding(16.dp)
-                .fillMaxWidth()
+                modifier = Modifier
+                    .padding(16.dp)
+                    .fillMaxWidth()
                     .verticalScroll(rememberScrollState())
                 ,
 
@@ -198,9 +200,10 @@ fun SignUpScreen(navController: NavController ,
 
         }
 
+        if(vm.inProgress.value){
+            commonProgressBar()
+        }
     }
-
-
 }
 
 

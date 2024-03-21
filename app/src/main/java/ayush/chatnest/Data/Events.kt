@@ -1,6 +1,6 @@
 package ayush.chatnest.Data
 
-open class Events <out T> (val content : T) {
+open class Event <out T> (val content : T) {
 
     var hasBeenHandled = false
     fun getContentOrNull(): T? {
