@@ -1,4 +1,3 @@
 package ayush.chatnest.Data
 
-class Constants {
-}
+const val USER_NODE = "User"
