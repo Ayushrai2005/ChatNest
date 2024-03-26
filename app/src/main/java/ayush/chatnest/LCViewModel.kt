@@ -4,13 +4,18 @@ import android.net.Uri
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.platform.LocalContext
+import androidx.core.text.isDigitsOnly
 import androidx.lifecycle.ViewModel
 import androidx.navigation.NavController
+import ayush.chatnest.Data.CHAT_NODE
+import ayush.chatnest.Data.ChatData
+import ayush.chatnest.Data.ChatUser
 import ayush.chatnest.Data.Event
 import ayush.chatnest.Data.USER_NODE
 import ayush.chatnest.Data.User
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.Filter
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.toObject
@@ -28,8 +33,9 @@ class LCViewModel @Inject constructor(
 ): ViewModel() {
 
 
-
+    val chats = mutableStateOf<List<ChatData>>(listOf())
     var inProgress = mutableStateOf(false)
+    var inProgressChat = mutableStateOf(false)
     val eventMutableState = mutableStateOf<Event<String>?>(null)
     var signIn = mutableStateOf(false)
 
@@ -198,5 +204,74 @@ class LCViewModel @Inject constructor(
         userData.value= null
         eventMutableState.value = Event("Logged Out")
     }
+
+fun onAddChat(number: String) {
+    inProgressChat.value = true
+    if(number.isEmpty() or !number.isDigitsOnly()){
+        handleException(customMessage = "Please Enter a valid Number")
+        inProgressChat.value = false
+    }else{
+        db.collection(CHAT_NODE).where(Filter.or(
+
+            Filter.and(
+                Filter.equalTo("user1.phoneNumber" , number),
+                Filter.equalTo("user2.phoneNumber" , userData.value?.phoneNumber)
+            ),
+            Filter.and(
+                Filter.equalTo("user2.phoneNumber" , number),
+                Filter.equalTo("user1.phoneNumber" , userData.value?.phoneNumber)
+
+            )
+
+        )).get().addOnSuccessListener {
+            if(it.isEmpty){
+                db.collection(USER_NODE).whereEqualTo("phoneNumber" , number).get().addOnSuccessListener {
+                    if(it.isEmpty){
+                        handleException(customMessage = "User not found")
+                        inProgressChat.value = false
+                    }else{
+                        val chatPartner = it.documents[0].toObject<User>()
+                        if (chatPartner != null && userData.value != null) {
+                            val id = db.collection(USER_NODE).document().id
+                            val chat = ChatData(
+                                chatId = id,
+                                user1 = ChatUser(
+                                    userId = userData.value?.userId,
+                                    name = userData.value?.name,
+                                    imageUrl = userData.value?.imageUrl,
+                                    phoneNumber = userData.value?.phoneNumber
+                                ),
+                                user2 = ChatUser(
+                                    userId = chatPartner.userId,
+                                    name = chatPartner.name,
+                                    imageUrl = chatPartner.imageUrl,
+                                    phoneNumber = chatPartner.phoneNumber
+                                )
+                            )
+                            db.collection(CHAT_NODE).document(id).set(chat).addOnSuccessListener {
+                                inProgressChat.value = false
+                            }
+                                .addOnFailureListener{
+                                    handleException(it)
+                                    inProgress.value = false
+                                }
+                        } else {
+                            handleException(customMessage = "User data is null")
+                        }
+                    }
+                }
+                    .addOnFailureListener{
+                        inProgress.value = false
+                        handleException(it)
+                    }
+            }
+        }.addOnFailureListener {
+            inProgressChat.value = false
+            handleException(it)
+        }
+    }
+}
+
+
 }
 
