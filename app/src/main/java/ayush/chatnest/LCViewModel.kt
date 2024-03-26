@@ -1,5 +1,6 @@
 package ayush.chatnest
 
+import android.net.Uri
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.runtime.Composable
@@ -15,14 +16,17 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.toObject
+import com.google.firebase.storage.FirebaseStorage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.lang.Exception
+import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
 class LCViewModel @Inject constructor(
     val auth : FirebaseAuth ,
-    var db : FirebaseFirestore
+    var db : FirebaseFirestore,
+    val storage : FirebaseStorage
 ): ViewModel() {
 
 
@@ -154,6 +158,33 @@ class LCViewModel @Inject constructor(
         }else{
             handleException(customMessage = "Please Fill in all Fields")
         }
+
+    }
+
+    fun uploadProfileImage(uri: Uri) {
+        UploadImage(uri){
+            createOrUpdateProfile(imageUrl = it.toString())
+
+        }
+
+    }
+
+    fun UploadImage(uri : Uri , onSuccess : (Uri) -> Unit){
+        inProgress.value = true
+        val storageRef = storage.reference
+        val uuid = UUID.randomUUID()
+        val email = auth.currentUser?.email
+        val imageRef = storageRef.child("Images/${email}_${System.currentTimeMillis()}")
+        val uploadTask = imageRef.putFile(uri)
+        uploadTask.addOnSuccessListener {
+            val result = it.metadata?.reference?.downloadUrl
+            result?.addOnSuccessListener(onSuccess)
+            inProgress.value = false
+        }
+            .addOnFailureListener{
+                handleException(it)
+            }
+
 
     }
 }

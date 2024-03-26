@@ -16,7 +16,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import ayush.chatnest.Screens.ChatListScreen
 import ayush.chatnest.Screens.LoginPage
+import ayush.chatnest.Screens.ProfileScreen
 import ayush.chatnest.Screens.SignUpScreen
+import ayush.chatnest.Screens.StatusScreen
 import ayush.chatnest.ui.theme.ChatNestTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -57,20 +59,23 @@ class MainActivity : ComponentActivity() {
 fun ChatAppNavigation() {
 val navController = rememberNavController()
     val vm = hiltViewModel<LCViewModel>()
-    NavHost(navController = navController, startDestination = DestinationScreen.SignUp.route ){
+    NavHost(navController = navController, startDestination = DestinationScreen.ChatList.route ){
 
         composable(DestinationScreen.SignUp.route){
             SignUpScreen(navController , vm)
         }
         composable(DestinationScreen.ChatList.route){
-            ChatListScreen()
+            ChatListScreen(navController , vm = vm)
         }
         composable(DestinationScreen.Login.route){
             LoginPage(vm , navController)
         }
-//        composable(DestinationScreen.SignUp.route){
-//            SignUpScreen()
-//        }
+        composable(DestinationScreen.StatusList.route){
+            StatusScreen(navController , vm = vm)
+        }
+        composable(DestinationScreen.Profile.route){
+            ProfileScreen(navController , vm = vm)
+        }
 
 
 
