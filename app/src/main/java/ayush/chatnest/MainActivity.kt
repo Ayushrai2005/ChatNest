@@ -59,7 +59,7 @@ class MainActivity : ComponentActivity() {
 fun ChatAppNavigation() {
 val navController = rememberNavController()
     val vm = hiltViewModel<LCViewModel>()
-    NavHost(navController = navController, startDestination = DestinationScreen.ChatList.route ){
+    NavHost(navController = navController, startDestination = DestinationScreen.Login.route ){
 
         composable(DestinationScreen.SignUp.route){
             SignUpScreen(navController , vm)

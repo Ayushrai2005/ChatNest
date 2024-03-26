@@ -1,20 +1,15 @@
 package ayush.chatnest.Screens
 
-import android.content.ContentResolver
-import android.graphics.Bitmap
+
 import android.net.Uri
-import android.provider.MediaStore
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -23,7 +18,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
 import androidx.compose.material.Card
 import androidx.compose.material.Text
 import androidx.compose.material3.TextField
@@ -32,21 +26,21 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import ayush.chatnest.CommonDivider
 import ayush.chatnest.CommonImage
+import ayush.chatnest.Data.User
+import ayush.chatnest.DestinationScreen
 import ayush.chatnest.LCViewModel
 import ayush.chatnest.commonProgressBar
-import java.io.IOException
-
+import ayush.chatnest.navigateTo
 
 @Composable
 fun ProfileScreen(navController: NavController, vm: LCViewModel){
@@ -56,6 +50,14 @@ fun ProfileScreen(navController: NavController, vm: LCViewModel){
         commonProgressBar()
     }
     else{
+        val userData = vm.userData.value
+        var name by rememberSaveable {
+            mutableStateOf(userData?.name?:"")
+        }
+        var number by rememberSaveable {
+            mutableStateOf(userData?.phoneNumber?:"")
+        }
+
         Column(
             verticalArrangement = Arrangement.SpaceBetween
         ) {
@@ -64,13 +66,18 @@ fun ProfileScreen(navController: NavController, vm: LCViewModel){
                 .verticalScroll(rememberScrollState())
                 .padding(8.dp),
                 vm = vm ,
-                name = "",
-                number = "",
-                onNameChange = {""},
-                onNumberChange = {""},
-                onBack = {},
-                onLogOut = {},
-                onSave = {}
+                name = name,
+                number = number,
+                onNameChange = {name = it},
+                onNumberChange = {number= it},
+                onBack = { navigateTo(navController = navController , route = DestinationScreen.ChatList.route) },
+                onLogOut = {vm.logout()
+                           navigateTo(navController = navController , route = DestinationScreen.Login.route)},
+                onSave = {
+                    vm.createOrUpdateProfile(
+                        name = name , phoneNumber = number
+                    )
+                }
             )
             BottomNavigationMenu(selectedItem = BottomNavigationItem.PROFILE, navController = navController)
 
@@ -194,15 +201,4 @@ fun ProfileImage(imageUrl : String? , vm : LCViewModel){
         }
     }
     val context = LocalContext.current
-
 }
-
-//private fun loadBitmap(contentResolver: ContentResolver, uri: Uri): ImageBitmap {
-//    return try {
-//        val bitmap = MediaStore.Images.Media.getBitmap(contentResolver, uri)
-//        val resizedBitmap = Bitmap.createScaledBitmap(bitmap, 600, 600, true)
-//        resizedBitmap.asImageBitmap()
-//    } catch (e: IOException) {
-//        ImageBitmap(1, 1)
-//    }
-//}

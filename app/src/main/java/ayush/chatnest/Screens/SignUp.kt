@@ -45,18 +45,14 @@ import ayush.chatnest.LCViewModel
 import ayush.chatnest.R
 import ayush.chatnest.commonProgressBar
 import ayush.chatnest.navigateTo
-import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.auth
-import com.google.firebase.firestore.firestore
-import dagger.hilt.android.lifecycle.HiltViewModel
 
 private lateinit var auth: FirebaseAuth
 @Composable
 fun SignUpScreen(navController: NavController ,
                  vm : LCViewModel
 ) {
-    CheckSignedIn(vm = vm , navController = navController , )
+    CheckSignedIn(vm = vm , navController = navController )
 
     val context = LocalContext.current
 

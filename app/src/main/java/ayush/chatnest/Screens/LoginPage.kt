@@ -53,14 +53,17 @@ private lateinit var auth: FirebaseAuth
 
 @Composable
 fun LoginPage( vm : LCViewModel, navController: NavController) {
-//    // Check if the user is already logged in
-//    val currentUser = Firebase.auth.currentUser
-//
-//    // If the user is already logged in, navigate to the home page
-//    if (currentUser != null) {
-//        navController.navigate("Main_View")
-//        return
-//    }
+    // Check if the user is already logged in
+    val currentUser = Firebase.auth.currentUser
+
+    // If the user is already logged in, navigate to the home page
+    if (currentUser != null) {
+        navController.navigate(DestinationScreen.ChatList.route) {
+            popUpTo(navController.graph.startDestinationId)
+            launchSingleTop = true
+        }
+        return
+    }
 
 
     var userName by rememberSaveable { mutableStateOf("") }
@@ -216,7 +219,7 @@ private fun GradientButton(
             .fillMaxWidth()
             .padding(start = 32.dp, end = 32.dp),
         onClick = {
-                    vm.login(userName , userPassword)
+                    vm.login(userName , userPassword , navController)
 
        },
 

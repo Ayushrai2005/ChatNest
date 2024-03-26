@@ -2,8 +2,6 @@ package ayush.chatnest
 
 import android.net.Uri
 import android.util.Log
-import android.widget.Toast
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
@@ -69,6 +67,7 @@ class LCViewModel @Inject constructor(
 //                    Toast.makeText(context, "Registartion failed", Toast.LENGTH_SHORT)
 //                        .show()
                             handleException(task.exception , customMessage = "SignUp Failed")
+                            inProgress.value = false
 
                         }
                     }
@@ -79,7 +78,7 @@ class LCViewModel @Inject constructor(
 
     }
 
-    private fun createOrUpdateProfile(name: String?=null, phoneNumber: String?=null ,  userEmail: String?= null  , userPassword : String?=null  , imageUrl : String?=null) {
+     fun createOrUpdateProfile(name: String?=null, phoneNumber: String?=null ,  userEmail: String?= null  , userPassword : String?=null  , imageUrl : String?=null) {
         var uid = auth.currentUser?.uid
         val userData = User(
             userId = uid ,
@@ -95,6 +94,9 @@ class LCViewModel @Inject constructor(
             db.collection(USER_NODE).document(uid).get().addOnSuccessListener{
                 if(it.exists()){
                     //update user data
+                    db.collection(USER_NODE).document(uid).set(userData)
+                    inProgress.value = false
+                    getUserData(uid )
                 }else{
                     db.collection(USER_NODE).document(uid).set(userData)
                     inProgress.value = false
@@ -135,7 +137,7 @@ class LCViewModel @Inject constructor(
 
     }
 
-    fun login(userEmail: String , userPassword: String){
+    fun login(userEmail: String , userPassword: String , navController: NavController){
 
 
         if (userEmail.isNotEmpty() && userPassword.isNotEmpty()) {
@@ -149,6 +151,7 @@ class LCViewModel @Inject constructor(
                         auth.currentUser?.uid?.let {
                                 getUserData(it)
                         }
+                        navigateTo(navController = navController, DestinationScreen.ChatList.route)
                     } else {
                         // If sign in fails, display a message to the user.
                         handleException(customMessage = "Login Failed")
@@ -186,6 +189,14 @@ class LCViewModel @Inject constructor(
             }
 
 
+    }
+
+    fun logout() {
+        inProgress.value = true
+        auth.signOut()
+        inProgress.value = false
+        userData.value= null
+        eventMutableState.value = Event("Logged Out")
     }
 }
 
