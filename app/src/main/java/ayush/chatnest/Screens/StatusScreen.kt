@@ -119,17 +119,6 @@ fun StatusScreen(navController: NavController, vm: LCViewModel) {
                                                 )
                                             }
                                         }
-                                        userStatus.forEach {
-                                            CommonRow(
-                                                imageUrl = it.imageUrl,
-                                                name = it.timeStamp!!
-                                            ) {
-                                                navigateTo(
-                                                    navController,
-                                                    DestinationScreen.SingleStatus.createRoute(it.user.userId!!)
-                                                )
-                                            }
-                                        }
                                         CommonDivider()
                                     }
                                 }
