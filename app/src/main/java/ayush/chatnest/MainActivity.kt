@@ -18,6 +18,7 @@ import ayush.chatnest.Screens.ChatListScreen
 import ayush.chatnest.Screens.LoginPage
 import ayush.chatnest.Screens.ProfileScreen
 import ayush.chatnest.Screens.SignUpScreen
+import ayush.chatnest.Screens.SingleChatScreen
 import ayush.chatnest.Screens.StatusScreen
 import ayush.chatnest.ui.theme.ChatNestTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -29,7 +30,7 @@ sealed class DestinationScreen(val route : String){
     object  Profile : DestinationScreen ("profile")
     object  ChatList : DestinationScreen ("chatlist")
     object  SingleChat : DestinationScreen ("singlechat/{chatId}"){
-        fun createRoute(id: String) = "singlechat/id"
+        fun createRoute(id: String) = "singlechat/$id"
     }
 
     object  StatusList : DestinationScreen ("statuslist")
@@ -66,6 +67,12 @@ val navController = rememberNavController()
         }
         composable(DestinationScreen.ChatList.route){
             ChatListScreen(navController , vm = vm)
+        }
+        composable(DestinationScreen.SingleChat.route){
+                val chatId = it.arguments?.getString("chatId")
+            chatId?.let {
+                SingleChatScreen(navController , vm , chatId = chatId)
+            }
         }
         composable(DestinationScreen.Login.route){
             LoginPage(vm , navController)

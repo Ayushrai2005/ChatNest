@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.AlertDialog
@@ -28,9 +30,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import ayush.chatnest.CommonRow
+import ayush.chatnest.DestinationScreen
 import ayush.chatnest.LCViewModel
 import ayush.chatnest.TitleText
 import ayush.chatnest.commonProgressBar
+import ayush.chatnest.navigateTo
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -85,6 +90,31 @@ fun ChatListScreen(
                             Text(text = "No Chats Available")
 
                         }
+                    }else{
+                        LazyColumn(
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            items(chats){
+                                    chat->
+                                val chatUser = if(chat.user1.userId == userData?.userId){
+                                    chat.user2
+                                }else{
+                                    chat.user1
+                                }
+
+                                if (chatUser.name != null) {
+                                    CommonRow(imageUrl = chatUser.imageUrl, name = chatUser.name) {
+                                        if (chat.chatId != null) {
+                                            navigateTo(
+                                                navController,
+                                                DestinationScreen.SingleChat.createRoute(chat.chatId)
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
                     }
 
 
@@ -101,13 +131,6 @@ fun ChatListScreen(
 
 
 }
-//Column(modifier = Modifier.padding(8.dp)) {
-//                    Text(text = "Welcome ${userData?.name ?: ""}")
-//                    chats.forEach {
-//                        ChatItem(chatData = it, navController = navController)
-//                    }
-//
-//                }
 
 @Composable
 fun Fab(

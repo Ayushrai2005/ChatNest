@@ -11,17 +11,24 @@ import ayush.chatnest.Data.CHAT_NODE
 import ayush.chatnest.Data.ChatData
 import ayush.chatnest.Data.ChatUser
 import ayush.chatnest.Data.Event
+import ayush.chatnest.Data.MESSAGE_NODE
+import ayush.chatnest.Data.Message
+import ayush.chatnest.Data.Status
 import ayush.chatnest.Data.USER_NODE
 import ayush.chatnest.Data.User
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.Filter
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.toObject
+import com.google.firebase.firestore.toObjects
 import com.google.firebase.storage.FirebaseStorage
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.grpc.NameResolver.Listener
 import java.lang.Exception
+import java.util.Calendar
 import java.util.UUID
 import javax.inject.Inject
 
@@ -49,6 +56,59 @@ class LCViewModel @Inject constructor(
         }
     }
 
+    val chatMessages = mutableStateOf<List<Message>>(listOf())
+    val inProgressChatMessage = mutableStateOf(false)
+    var currentChatMessageListener : ListenerRegistration?=null
+    val status = mutableStateOf<List<Status>>(listOf())
+    val inProgressStatus = mutableStateOf(false)
+
+
+
+    fun PopulateMessages(chatId : String){
+        inProgressChatMessage.value = true
+
+        currentChatMessageListener = db.collection(CHAT_NODE).document(chatId).collection(
+            MESSAGE_NODE).addSnapshotListener{ value , error ->
+
+                if(error != null){
+                    handleException(error)
+                }
+                if(value!=null){
+                    chatMessages.value = value.documents.mapNotNull {
+                        it.toObject<Message>()
+                    }.sortedBy { it.timeStamp }
+                    inProgressChatMessage.value = false
+
+                }
+        }
+    }
+
+    fun dePopulate(){
+        chatMessages.value = listOf()
+        currentChatMessageListener= null
+    }
+
+    fun populateChat(){
+        inProgressChat.value = true
+
+        db.collection(CHAT_NODE).where(
+            Filter.or(
+                Filter.equalTo("user1.userId" , userData.value?.userId),
+                Filter.equalTo("user2.userId" , userData.value?.userId)
+            )
+        ).addSnapshotListener{
+            value , error  ->
+            if(error != null){
+                handleException(error , "Cannot Retrieve Chats")
+            }
+            if(value != null){
+                chats.value = value.documents.mapNotNull {
+                    it.toObject<ChatData>()
+                }
+                inProgressChat.value = false
+            }
+        }
+    }
     fun signup(name : String , phoneNumber: String , userEmail : String , userPassword:String){
         inProgress.value = true
 
@@ -127,6 +187,7 @@ class LCViewModel @Inject constructor(
                 var user = value.toObject<User>()
                 userData.value = user
                 inProgress.value = false
+                populateChat()
             }
         }
     }
@@ -200,6 +261,9 @@ class LCViewModel @Inject constructor(
     fun logout() {
         inProgress.value = true
         auth.signOut()
+        signIn.value =false
+        dePopulate()
+        currentChatMessageListener =null
         inProgress.value = false
         userData.value= null
         eventMutableState.value = Event("Logged Out")
@@ -230,24 +294,25 @@ fun onAddChat(number: String) {
                         handleException(customMessage = "User not found")
                         inProgressChat.value = false
                     }else{
-                        val chatPartner = it.documents[0].toObject<User>()
+                        val chatPartner = it.toObjects<User>()[0]
                         if (chatPartner != null && userData.value != null) {
                             val id = db.collection(USER_NODE).document().id
                             val chat = ChatData(
                                 chatId = id,
-                                user1 = ChatUser(
+                                ChatUser(
                                     userId = userData.value?.userId,
                                     name = userData.value?.name,
                                     imageUrl = userData.value?.imageUrl,
                                     phoneNumber = userData.value?.phoneNumber
                                 ),
-                                user2 = ChatUser(
+                                ChatUser(
                                     userId = chatPartner.userId,
                                     name = chatPartner.name,
                                     imageUrl = chatPartner.imageUrl,
                                     phoneNumber = chatPartner.phoneNumber
                                 )
                             )
+                            inProgressChat.value = false
                             db.collection(CHAT_NODE).document(id).set(chat).addOnSuccessListener {
                                 inProgressChat.value = false
                             }
@@ -256,6 +321,7 @@ fun onAddChat(number: String) {
                                     inProgress.value = false
                                 }
                         } else {
+                            inProgressChat.value = false
                             handleException(customMessage = "User data is null")
                         }
                     }
@@ -271,6 +337,46 @@ fun onAddChat(number: String) {
         }
     }
 }
+
+    fun onSendReply(chatId : String , message : String) {
+        inProgressChat.value = true
+        val time = Calendar.getInstance().time.toString()
+        val msg = Message(
+            sendBy = userData.value?.userId,
+            message = message,
+            timeStamp = time
+        )
+        db.collection(CHAT_NODE).document(chatId).collection(MESSAGE_NODE).document().set(msg).addOnSuccessListener {
+            inProgressChat.value = false
+        }
+            .addOnFailureListener{
+                handleException(it)
+                inProgressChat.value = false
+            }
+    }
+
+    fun uploadStatus(uri: Uri) {
+        inProgressStatus.value = true
+        UploadImage(uri){
+            val status = Status(
+                user = ChatUser(
+                    userId = userData.value?.userId,
+                    name = userData.value?.name,
+                    imageUrl = userData.value?.imageUrl,
+                    phoneNumber = userData.value?.phoneNumber
+                ),
+                imageUrl = it.toString(),
+                timeStamp = Calendar.getInstance().time.toString()
+            )
+            db.collection("Status").document().set(status).addOnSuccessListener {
+                inProgressStatus.value = false
+            }
+                .addOnFailureListener{
+                    handleException(it)
+                    inProgressStatus.value = false
+                }
+        }
+    }
 
 
 }
