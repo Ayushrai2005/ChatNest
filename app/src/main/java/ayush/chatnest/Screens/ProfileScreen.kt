@@ -19,7 +19,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Card
-import androidx.compose.material.Text
+import androidx.compose.material.ContentAlpha
+import androidx.compose.material.LocalTextStyle
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
@@ -32,7 +36,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.SemanticsProperties.Text
+import androidx.compose.ui.text.input.KeyboardType.Companion.Text
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import ayush.chatnest.CommonDivider
 import ayush.chatnest.CommonImage
@@ -84,7 +91,7 @@ fun ProfileScreen(navController: NavController, vm: LCViewModel){
         }
     }
 }
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileContent(
     modifier : Modifier,
@@ -97,25 +104,20 @@ fun ProfileContent(
     onSave:() ->Unit,
     onLogOut:() ->Unit
 ){
-
     val imageUrl = vm.userData.value?.imageUrl
 
-    Column {
+    Column(modifier = Modifier.padding(16.dp)) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(8.dp) ,
+                .padding(8.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(text = "Back" , Modifier.clickable {
-                onBack.invoke()
-            })
-            Text(text = "Save" , Modifier.clickable {
-                onSave.invoke()
-            })
+            Text(text = "Back", style = LocalTextStyle.current.copy(fontSize = 20.sp), modifier = Modifier.clickable { onBack.invoke() })
+            Text(text = "Save", style = LocalTextStyle.current.copy(fontSize = 20.sp), modifier = Modifier.clickable { onSave.invoke() })
         }
         CommonDivider()
-        ProfileImage( imageUrl = imageUrl , vm = vm)
+        ProfileImage(imageUrl = imageUrl, vm = vm)
         CommonDivider()
 
         Row(
@@ -124,15 +126,14 @@ fun ProfileContent(
                 .padding(4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(text = "Name"  , modifier = Modifier.width(100.dp) )
-            TextField(value = name, onValueChange = onNameChange,
-                colors = TextFieldDefaults.colors(
-                    focusedTextColor = Color.Black,
-                    focusedContainerColor = Color.Transparent,
-                    unfocusedContainerColor = Color.Transparent,
-                    disabledContainerColor = Color.Transparent
-
-
+            Text(text = "Name", fontSize = 20.sp, modifier = Modifier.width(100.dp))
+            TextField(
+                value = name,
+                onValueChange = onNameChange,
+                modifier = Modifier.fillMaxWidth(),
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                    focusedBorderColor = MaterialTheme.colors.primary,
+                    unfocusedBorderColor = MaterialTheme.colors.onSurface.copy(alpha = ContentAlpha.disabled)
                 )
             )
         }
@@ -142,15 +143,14 @@ fun ProfileContent(
                 .padding(4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(text = "Phone Number" , Modifier.width(100.dp))
-            TextField(value = number, onValueChange = onNumberChange,
-                colors = TextFieldDefaults.colors(
-                    focusedTextColor = Color.Black,
-                    focusedContainerColor = Color.Transparent,
-                    unfocusedContainerColor = Color.Transparent,
-                    disabledContainerColor = Color.Transparent
-
-
+            Text(text = "Phone Number", fontSize = 20.sp, modifier = Modifier.width(100.dp))
+            TextField(
+                value = number,
+                onValueChange = onNumberChange,
+                modifier = Modifier.fillMaxWidth(),
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                    focusedBorderColor = MaterialTheme.colors.primary,
+                    unfocusedBorderColor = MaterialTheme.colors.onSurface.copy(alpha = ContentAlpha.disabled)
                 )
             )
         }
@@ -164,8 +164,6 @@ fun ProfileContent(
             Text(text = "Logout", Modifier.clickable {onLogOut.invoke() })
         }
     }
-
-
 }
 
 @Composable
@@ -183,22 +181,20 @@ fun ProfileImage(imageUrl : String? , vm : LCViewModel){
             .fillMaxWidth()
             .clickable {
                 launcher.launch("image/*")
-            } , horizontalAlignment = Alignment.CenterHorizontally) {
+            }, horizontalAlignment = Alignment.CenterHorizontally) {
             Card(
                 shape = CircleShape,
                 modifier = Modifier
                     .padding(8.dp)
-                    .size(100.dp)
+                    .size(150.dp)
             ) {
-                    CommonImage(data = imageUrl)
+                CommonImage(data = imageUrl)
             }
             Text(text = "Change Profile Picture")
-
         }
 
         if(vm.inProgress.value){
             commonProgressBar()
         }
     }
-    val context = LocalContext.current
 }

@@ -5,8 +5,10 @@ import android.icu.text.CaseMap.Title
 import android.inputmethodservice.Keyboard
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -18,7 +20,9 @@ import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -43,6 +47,8 @@ fun ChatListScreen(
     navController: NavController, vm: LCViewModel
 ) {
     val inProgress = vm.inProgressChat
+    val searchQuery = remember { mutableStateOf("") }
+    val showSearchField = remember { mutableStateOf(false) }
 
     if (inProgress.value) {
         commonProgressBar()
@@ -78,8 +84,33 @@ fun ChatListScreen(
                         .fillMaxWidth()
                         .padding(it),
                 ) {
-                    TitleText(txt = "Chats")
-                    if (chats.isEmpty()) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        if (showSearchField.value) {
+                            OutlinedTextField(
+                                value = searchQuery.value,
+                                onValueChange = { searchQuery.value = it },
+                                label = { Text(text = "Search Chats") },
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                                modifier = Modifier.fillMaxWidth(0.9f)
+                            )
+                        } else {
+                            TitleText(txt = "Chats")
+                        }
+
+                        IconButton(onClick = { showSearchField.value = !showSearchField.value }) {
+                            Icon(imageVector = Icons.Rounded.Search, contentDescription = "Search" , tint = Color.Black , modifier = Modifier.size(50.dp).padding(top = 8.dp))
+                        }
+                    }
+
+                    val filteredChats = chats.filter {
+                        (it.user1.name?.contains(searchQuery.value, ignoreCase = true) ?: false)
+                                ||
+                                (it.user2.name?.contains(searchQuery.value, ignoreCase = true) ?: false)
+                    }
+                    if (filteredChats.isEmpty()) {
                         Column(
                             modifier = Modifier
                                 .weight(1f)
@@ -94,7 +125,7 @@ fun ChatListScreen(
                         LazyColumn(
                             modifier = Modifier.weight(1f)
                         ) {
-                            items(chats){
+                            items(filteredChats){
                                     chat->
                                 val chatUser = if(chat.user1.userId == userData?.userId){
                                     chat.user2
@@ -129,8 +160,8 @@ fun ChatListScreen(
 
     }
 
-
 }
+
 
 @Composable
 fun Fab(
@@ -145,7 +176,7 @@ fun Fab(
         onClick = { onFabClick.invoke() },
         containerColor = MaterialTheme.colorScheme.secondary,
         shape = CircleShape,
-        modifier = Modifier.padding(bottom = 40.dp)
+        modifier = Modifier.padding(bottom = 60.dp)
     ) {
         Icon(imageVector = Icons.Rounded.Add, contentDescription = null, tint = Color.White)
     }

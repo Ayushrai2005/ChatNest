@@ -62,7 +62,7 @@ fun SingleStatusScreen(navController: NavController, vm: LCViewModel, userId: St
         it.user.userId == userId
     }
 
-    if (status.isEmpty()) {
+    if (status.isNotEmpty()) {
         val currentStatus = remember { mutableStateOf(0) }
         Box(
             modifier = Modifier

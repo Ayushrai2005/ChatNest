@@ -144,7 +144,7 @@ fun FAB(
         onClick = onFabClick,
         containerColor = MaterialTheme.colorScheme.secondary,
         shape = CircleShape,
-        modifier = Modifier.padding(bottom = 40.dp)
+        modifier = Modifier.padding(bottom = 60.dp)
     ) {
         Icon(imageVector = Icons.Rounded.Edit, contentDescription = "Add", tint = Color.White)
     }
