@@ -65,7 +65,7 @@ fun ProfileScreen(navController: NavController, vm: LCViewModel){
             mutableStateOf(userData?.phoneNumber?:"")
         }
 
-        Column(
+              LazyColumn(
             verticalArrangement = Arrangement.SpaceBetween
         ) {
             ProfileContent(modifier = Modifier
