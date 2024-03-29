@@ -106,4 +106,6 @@ dependencies {
     annotationProcessor("com.github.bumptech.glide:compiler:4.12.0")
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.5.0")
 
+    implementation ("com.google.firebase:firebase-messaging:22.0.0")
+
 }
