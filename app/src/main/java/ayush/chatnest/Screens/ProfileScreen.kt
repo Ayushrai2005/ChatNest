@@ -10,11 +10,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
@@ -51,7 +53,6 @@ import ayush.chatnest.navigateTo
 
 @Composable
 fun ProfileScreen(navController: NavController, vm: LCViewModel){
-
     val inProgress = vm.inProgress.value
     if(inProgress){
         commonProgressBar()
@@ -65,29 +66,34 @@ fun ProfileScreen(navController: NavController, vm: LCViewModel){
             mutableStateOf(userData?.phoneNumber?:"")
         }
 
-              LazyColumn(
-            verticalArrangement = Arrangement.SpaceBetween
-        ) {
-            ProfileContent(modifier = Modifier
-                .weight(1f)
-                .verticalScroll(rememberScrollState())
-                .padding(8.dp),
-                vm = vm ,
-                name = name,
-                number = number,
-                onNameChange = {name = it},
-                onNumberChange = {number= it},
-                onBack = { navigateTo(navController = navController , route = DestinationScreen.ChatList.route) },
-                onLogOut = {vm.logout()
-                           navigateTo(navController = navController , route = DestinationScreen.Login.route)},
-                onSave = {
-                    vm.createOrUpdateProfile(
-                        name = name , phoneNumber = number
+        LazyColumn { // Wrap the Column with LazyColumn
+            item {
+                Column(
+                    verticalArrangement = Arrangement.SpaceBetween
+                ) {
+                    ProfileContent(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .verticalScroll(rememberScrollState())
+                            .padding(8.dp),
+                        vm = vm ,
+                        name = name,
+                        number = number,
+                        onNameChange = {name = it},
+                        onNumberChange = {number= it},
+                        onBack = { navigateTo(navController = navController , route = DestinationScreen.ChatList.route) },
+                        onLogOut = {vm.logout()
+                            navigateTo(navController = navController , route = DestinationScreen.Login.route)},
+                        onSave = {
+                            vm.createOrUpdateProfile(
+                                name = name , phoneNumber = number
+                            )
+                        }
                     )
+                    Spacer(modifier = Modifier.height(110.dp))
+                    BottomNavigationMenu(selectedItem = BottomNavigationItem.PROFILE, navController = navController)
                 }
-            )
-            BottomNavigationMenu(selectedItem = BottomNavigationItem.PROFILE, navController = navController)
-
+            }
         }
     }
 }

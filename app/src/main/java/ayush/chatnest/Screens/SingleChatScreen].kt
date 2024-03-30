@@ -102,7 +102,6 @@ fun SingleChatScreen(navController: NavController, vm: LCViewModel, chatId: Stri
         vm.PopulateMessages(chatId)
     }
     BackHandler {
-        vm.dePopulate()
         navController.popBackStack()
 
     }
